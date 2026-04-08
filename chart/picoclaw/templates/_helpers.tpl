@@ -41,4 +41,4 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 {{- end }}
 
-{{- define "picoclaw.picoHome" -}}/home/picoclaw/.picoclaw{{- end }}
+{{- define "picoclaw.picoHome" -}}/root/.picoclaw{{- end }}
