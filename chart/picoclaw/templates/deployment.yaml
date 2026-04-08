@@ -1,0 +1,177 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "picoclaw.fullname" . }}
+  labels:
+    {{- include "picoclaw.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "picoclaw.selectorLabels" . | nindent 6 }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "picoclaw.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.serviceAccount.create }}
+      serviceAccountName: {{ include "picoclaw.serviceAccountName" . }}
+      {{- end }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      initContainers:
+        - name: init-config
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          command: ["sh", "-c"]
+          args:
+            - |
+              PICO_HOME="{{ include "picoclaw.picoHome" . }}"
+              cp /config/config.json "$PICO_HOME/config.json"
+              {{- if or .Values.securityConfig (and .Values.securitySecret .Values.securitySecret.existingSecret) }}
+              cp /security/security.yml "$PICO_HOME/.security.yml"
+              {{- end }}
+              {{- if .Values.workspaceFiles }}
+              mkdir -p "$PICO_HOME/workspace"
+              {{- range $name, $_ := .Values.workspaceFiles }}
+              cp "/workspace-files/{{ $name }}" "$PICO_HOME/workspace/{{ $name }}"
+              {{- end }}
+              {{- end }}
+              {{- range $name, $skill := .Values.skillFiles }}
+              mkdir -p "$PICO_HOME/workspace/skills/{{ $name }}"
+              {{- range $skill.items }}
+              cp "/skill-{{ $name }}/{{ .key }}" "$PICO_HOME/workspace/skills/{{ $name }}/{{ .path }}"
+              {{- end }}
+              {{- end }}
+          volumeMounts:
+            - name: data
+              mountPath: {{ include "picoclaw.picoHome" . }}
+            - name: config
+              mountPath: /config
+            {{- if .Values.securityConfig }}
+            - name: security
+              mountPath: /security
+            {{- else if and .Values.securitySecret .Values.securitySecret.existingSecret }}
+            - name: security
+              mountPath: /security
+            {{- end }}
+            {{- if .Values.workspaceFiles }}
+            - name: workspace-files
+              mountPath: /workspace-files
+            {{- end }}
+            {{- range $name, $skill := .Values.skillFiles }}
+            - name: skill-{{ $name }}
+              mountPath: /skill-{{ $name }}
+            {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          args: ["gateway"]
+          env:
+            - name: PICOCLAW_HOME
+              value: {{ include "picoclaw.picoHome" . }}
+            - name: PICOCLAW_GATEWAY_HOST
+              value: "0.0.0.0"
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.extraEnvFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: 18790
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: data
+              mountPath: {{ include "picoclaw.picoHome" . }}
+      volumes:
+        - name: data
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim | default (include "picoclaw.fullname" .) }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        - name: config
+          configMap:
+            name: {{ include "picoclaw.fullname" . }}-config
+        {{- if .Values.securityConfig }}
+        - name: security
+          secret:
+            secretName: {{ include "picoclaw.fullname" . }}-security
+        {{- else if and .Values.securitySecret .Values.securitySecret.existingSecret }}
+        - name: security
+          secret:
+            secretName: {{ .Values.securitySecret.existingSecret }}
+            items:
+              - key: {{ .Values.securitySecret.key }}
+                path: security.yml
+        {{- end }}
+        {{- if .Values.workspaceFiles }}
+        - name: workspace-files
+          configMap:
+            name: {{ include "picoclaw.fullname" . }}-workspace
+        {{- end }}
+        {{- range $name, $skill := .Values.skillFiles }}
+        - name: skill-{{ $name }}
+          configMap:
+            name: {{ $skill.configMapName }}
+            {{- if $skill.items }}
+            items:
+              {{- range $skill.items }}
+              - key: {{ .key }}
+                path: {{ .key }}
+              {{- end }}
+            {{- end }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -1,0 +1,165 @@
+replicaCount: 1
+
+image:
+  repository: docker.io/sipeed/picoclaw
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: false
+  annotations: {}
+  name: ""
+
+# -- PicoClaw configuration (generates config.json)
+config:
+  # -- Agent defaults
+  agents:
+    defaults:
+      model: ""
+      restrict_to_workspace: false
+      max_tokens: 8192
+      temperature: 0.7
+      max_tool_iterations: 100
+    list: []
+    #  - id: main
+    #    default: true
+    #    name: Main Assistant
+
+  # -- Model list (model-centric provider config)
+  # API keys should go in .security.yml via securityConfig
+  model_list: []
+  #  - model_name: "gpt-4o"
+  #    model: "openai/gpt-4o"
+
+  # -- Agent bindings (route messages to specific agents)
+  bindings: []
+  #  - agent_id: "support"
+  #    match:
+  #      channel: "discord"
+  #      guild_id: "123456789"
+
+  # -- Channel configuration
+  channels:
+    discord:
+      enabled: false
+      # token: set via securityConfig or env
+      allow_from: []
+      group_trigger:
+        mention_only: false
+
+  # -- Session configuration
+  session: {}
+  #  dm_scope: "per-channel-peer"
+  #  backlog_limit: 20
+
+  # -- Gateway configuration
+  gateway:
+    log_level: "warn"
+
+  # -- Tool configuration
+  tools: {}
+  #  web:
+  #    duckduckgo:
+  #      enabled: true
+  #      max_results: 5
+  #  exec:
+  #    allow_remote: true
+  #  allow_read_paths: []
+  #  allow_write_paths: []
+
+  # -- Heartbeat (periodic tasks)
+  heartbeat:
+    enabled: false
+    interval: 30
+
+  # -- Extra config merged into config.json (raw JSON object)
+  extraConfig: {}
+
+# -- Security configuration (generates .security.yml)
+# Store API keys, tokens, and other sensitive data here
+securityConfig: {}
+#  model_list:
+#    gpt-4o:
+#      api_keys:
+#        - "sk-your-key"
+#  channels:
+#    discord:
+#      token: "your-bot-token"
+
+# -- Existing secret for .security.yml content
+# If set, the chart will mount this secret as .security.yml instead of creating one
+# The secret should have a key named "security.yml" with the YAML content
+securitySecret:
+  existingSecret: ""
+  key: "security.yml"
+
+# -- Workspace files to inject at startup
+# Files are copied to PICOCLAW_HOME/workspace/ by init container
+workspaceFiles: {}
+#  AGENT.md: |
+#    You are a helpful assistant.
+#  IDENTITY.md: |
+#    Your name is PicoClaw.
+
+# -- Skill files to inject
+# Each entry creates files under workspace/skills/<name>/
+skillFiles: {}
+#  my-skill:
+#    configMapName: my-skill-configmap
+#    items:
+#      - key: SKILL.md
+#        path: SKILL.md
+
+# -- Extra environment variables
+extraEnv: []
+#  - name: GITHUB_TOKEN
+#    value: "xxx"
+
+# -- Extra environment variable sources (secretRef, configMapRef)
+extraEnvFrom: []
+#  - secretRef:
+#      name: my-secret
+
+# -- Extra manifests to create alongside the chart
+extraManifests: []
+
+service:
+  type: ClusterIP
+  port: 18790
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts: []
+  tls: []
+
+persistence:
+  enabled: true
+  size: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  storageClass: ""
+  existingClaim: ""
+
+resources: {}
+#  requests:
+#    cpu: 50m
+#    memory: 64Mi
+#  limits:
+#    cpu: 500m
+#    memory: 256Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+podAnnotations: {}
+podLabels: {}
+podSecurityContext: {}
+securityContext: {}

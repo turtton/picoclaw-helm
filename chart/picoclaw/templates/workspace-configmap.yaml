@@ -1,0 +1,13 @@
+{{- if .Values.workspaceFiles }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "picoclaw.fullname" . }}-workspace
+  labels:
+    {{- include "picoclaw.labels" . | nindent 4 }}
+data:
+  {{- range $name, $content := .Values.workspaceFiles }}
+  {{ $name }}: |
+    {{- $content | nindent 4 }}
+  {{- end }}
+{{- end }}
