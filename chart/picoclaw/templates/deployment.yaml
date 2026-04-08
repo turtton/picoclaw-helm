@@ -90,6 +90,8 @@ spec:
               value: {{ include "picoclaw.picoHome" . }}
             - name: PICOCLAW_GATEWAY_HOST
               value: "0.0.0.0"
+            - name: PICOCLAW_GATEWAY_PORT
+              value: "{{ .Values.service.port }}"
             {{- with .Values.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
