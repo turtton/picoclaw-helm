@@ -85,7 +85,6 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          args: ["gateway"]
           env:
             - name: PICOCLAW_HOME
               value: {{ include "picoclaw.picoHome" . }}
