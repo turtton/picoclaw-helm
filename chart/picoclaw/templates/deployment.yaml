@@ -126,6 +126,36 @@ spec:
           volumeMounts:
             - name: data
               mountPath: {{ include "picoclaw.picoHome" . }}
+        {{- if .Values.copilotCli.enabled }}
+        - name: copilot-cli
+          image: "{{ .Values.copilotCli.image.repository }}:{{ .Values.copilotCli.image.tag }}"
+          imagePullPolicy: {{ .Values.copilotCli.image.pullPolicy }}
+          args: ["--headless", "--port", "{{ .Values.copilotCli.port }}"]
+          env:
+            - name: COPILOT_GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.copilotCli.tokenSecret.name }}
+                  key: {{ .Values.copilotCli.tokenSecret.key }}
+          ports:
+            - name: copilot
+              containerPort: {{ .Values.copilotCli.port }}
+              protocol: TCP
+          livenessProbe:
+            tcpSocket:
+              port: copilot
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            tcpSocket:
+              port: copilot
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          {{- with .Values.copilotCli.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        {{- end }}
       volumes:
         - name: data
           {{- if .Values.persistence.enabled }}

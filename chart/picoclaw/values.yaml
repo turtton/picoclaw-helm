@@ -163,3 +163,24 @@ podAnnotations: {}
 podLabels: {}
 podSecurityContext: {}
 securityContext: {}
+
+# -- Copilot CLI sidecar (for github-copilot provider)
+# Runs ghcr.io/github/copilot-cli in headless mode on localhost:4321
+copilotCli:
+  enabled: false
+  image:
+    repository: ghcr.io/github/copilot-cli
+    tag: latest
+    pullPolicy: IfNotPresent
+  port: 4321
+  # -- Secret containing COPILOT_GITHUB_TOKEN
+  tokenSecret:
+    name: ""
+    key: "COPILOT_GITHUB_TOKEN"
+  resources: {}
+  #  requests:
+  #    cpu: 10m
+  #    memory: 32Mi
+  #  limits:
+  #    cpu: 200m
+  #    memory: 128Mi
