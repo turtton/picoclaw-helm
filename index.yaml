@@ -3,6 +3,23 @@ entries:
   picoclaw:
   - apiVersion: v2
     appVersion: v0.2.5
+    created: "2026-04-09T22:05:27.477994821+09:00"
+    description: Helm chart for PicoClaw - lightweight AI assistant for Kubernetes
+    digest: 299b4a9296b8e6d35558369d4449e06edd68a19d30717c7f17f2fef520ae8ee3
+    home: https://github.com/sipeed/picoclaw
+    maintainers:
+    - name: turtton
+      url: https://github.com/turtton
+    name: picoclaw
+    sources:
+    - https://github.com/sipeed/picoclaw
+    - https://github.com/turtton/picoclaw-helm
+    type: application
+    urls:
+    - https://github.com/turtton/picoclaw-helm/releases/download/picoclaw-0.1.5/picoclaw-0.1.5.tgz
+    version: 0.1.5
+  - apiVersion: v2
+    appVersion: v0.2.5
     created: "2026-04-08T23:22:41.70086146+09:00"
     description: Helm chart for PicoClaw - lightweight AI assistant for Kubernetes
     digest: 9784be3f03d0b023548ccf31e821e41bf6ecb76d15a6db7190fc31bb9e5dd95e
@@ -86,4 +103,4 @@ entries:
     urls:
     - https://github.com/turtton/picoclaw-helm/releases/download/picoclaw-0.1.4/picoclaw-0.1.0.tgz
     version: 0.1.0
-generated: "2026-04-08T23:22:41.699625225+09:00"
+generated: "2026-04-09T22:05:27.477527513+09:00"
