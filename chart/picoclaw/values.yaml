@@ -170,6 +170,8 @@ securityContext: {}
 launcher:
   enabled: false
   image:
+    # -- Image repository for the launcher sidecar (defaults to .Values.image.repository)
+    repository: ""
     # -- Image tag for the launcher sidecar (must contain picoclaw-launcher binary)
     tag: "launcher"
   port: 18800

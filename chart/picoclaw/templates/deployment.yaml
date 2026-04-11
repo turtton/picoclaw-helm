@@ -128,7 +128,7 @@ spec:
               mountPath: {{ include "picoclaw.picoHome" . }}
         {{- if .Values.launcher.enabled }}
         - name: launcher
-          image: "{{ .Values.image.repository }}:{{ .Values.launcher.image.tag }}"
+          image: "{{ .Values.launcher.image.repository | default .Values.image.repository }}:{{ .Values.launcher.image.tag }}"
           command: ["picoclaw-launcher"]
           args:
             - "-port"
