@@ -11,5 +11,11 @@ spec:
       targetPort: http
       protocol: TCP
       name: http
+    {{- if .Values.launcher.enabled }}
+    - port: {{ .Values.launcher.port }}
+      targetPort: launcher
+      protocol: TCP
+      name: launcher
+    {{- end }}
   selector:
     {{- include "picoclaw.selectorLabels" . | nindent 4 }}

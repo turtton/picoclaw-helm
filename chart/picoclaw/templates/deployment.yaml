@@ -126,6 +126,53 @@ spec:
           volumeMounts:
             - name: data
               mountPath: {{ include "picoclaw.picoHome" . }}
+        {{- if .Values.launcher.enabled }}
+        - name: launcher
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          command: ["picoclaw-launcher"]
+          args:
+            - "-port"
+            - "{{ .Values.launcher.port }}"
+            - "-public"
+            - "-no-browser"
+            {{- range .Values.launcher.extraArgs }}
+            - {{ . | quote }}
+            {{- end }}
+          env:
+            - name: PICOCLAW_HOME
+              value: {{ include "picoclaw.picoHome" . }}
+            {{- if .Values.launcher.token }}
+            - name: PICOCLAW_LAUNCHER_TOKEN
+              value: {{ .Values.launcher.token | quote }}
+            {{- else if and .Values.launcher.tokenSecret .Values.launcher.tokenSecret.existingSecret }}
+            - name: PICOCLAW_LAUNCHER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.launcher.tokenSecret.existingSecret }}
+                  key: {{ .Values.launcher.tokenSecret.key }}
+            {{- end }}
+          ports:
+            - name: launcher
+              containerPort: {{ .Values.launcher.port }}
+              protocol: TCP
+          livenessProbe:
+            tcpSocket:
+              port: launcher
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            tcpSocket:
+              port: launcher
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          {{- with .Values.launcher.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: data
+              mountPath: {{ include "picoclaw.picoHome" . }}
+        {{- end }}
         {{- if .Values.copilotCli.enabled }}
         - name: copilot-cli
           image: "{{ .Values.copilotCli.image.repository }}:{{ .Values.copilotCli.image.tag }}"

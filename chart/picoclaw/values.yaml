@@ -164,6 +164,28 @@ podLabels: {}
 podSecurityContext: {}
 securityContext: {}
 
+# -- Launcher sidecar (WebUI reverse proxy to gateway)
+# Runs picoclaw-launcher alongside the gateway in the same pod
+launcher:
+  enabled: false
+  port: 18800
+  # -- Extra CLI flags for picoclaw-launcher (e.g. ["-lang", "ja", "-debug"])
+  extraArgs: []
+  # -- Authentication token for launcher WebUI
+  # If empty, launcher auto-generates a token
+  token: ""
+  # -- Existing secret for PICOCLAW_LAUNCHER_TOKEN
+  tokenSecret:
+    existingSecret: ""
+    key: "PICOCLAW_LAUNCHER_TOKEN"
+  resources: {}
+  #  requests:
+  #    cpu: 10m
+  #    memory: 32Mi
+  #  limits:
+  #    cpu: 200m
+  #    memory: 128Mi
+
 # -- Copilot CLI sidecar (for github-copilot provider)
 # Runs copilot-cli in headless mode on localhost:4321
 copilotCli:
