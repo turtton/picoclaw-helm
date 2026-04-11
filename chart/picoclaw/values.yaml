@@ -165,13 +165,17 @@ podSecurityContext: {}
 securityContext: {}
 
 # -- Copilot CLI sidecar (for github-copilot provider)
-# Runs ghcr.io/github/copilot-cli in headless mode on localhost:4321
+# Runs copilot-cli in headless mode on localhost:4321
 copilotCli:
   enabled: false
   image:
     repository: ghcr.io/github/copilot-cli
     tag: latest
     pullPolicy: IfNotPresent
+  # -- Override container command (entrypoint)
+  # Use when the image has a different entrypoint than copilot-cli
+  # Example: ["copilot-cli"]
+  command: []
   port: 4321
   # -- Secret containing COPILOT_GITHUB_TOKEN
   tokenSecret:

@@ -130,6 +130,10 @@ spec:
         - name: copilot-cli
           image: "{{ .Values.copilotCli.image.repository }}:{{ .Values.copilotCli.image.tag }}"
           imagePullPolicy: {{ .Values.copilotCli.image.pullPolicy }}
+          {{- with .Values.copilotCli.command }}
+          command:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           args: ["--headless", "--port", "{{ .Values.copilotCli.port }}"]
           env:
             - name: COPILOT_GITHUB_TOKEN
