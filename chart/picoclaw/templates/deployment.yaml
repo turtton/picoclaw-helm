@@ -156,12 +156,14 @@ spec:
               containerPort: {{ .Values.launcher.port }}
               protocol: TCP
           livenessProbe:
-            tcpSocket:
+            httpGet:
+              path: /api/auth/status
               port: launcher
             initialDelaySeconds: 10
             periodSeconds: 30
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: /api/auth/status
               port: launcher
             initialDelaySeconds: 5
             periodSeconds: 10
