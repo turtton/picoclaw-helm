@@ -150,6 +150,7 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.launcher.tokenSecret.existingSecret }}
                   key: {{ .Values.launcher.tokenSecret.key }}
+                  optional: true
             {{- end }}
           ports:
             - name: launcher
@@ -161,12 +162,14 @@ spec:
               port: launcher
             initialDelaySeconds: 10
             periodSeconds: 30
+            timeoutSeconds: 3
           readinessProbe:
             httpGet:
               path: /api/auth/status
               port: launcher
             initialDelaySeconds: 5
             periodSeconds: 10
+            timeoutSeconds: 3
           {{- with .Values.launcher.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
