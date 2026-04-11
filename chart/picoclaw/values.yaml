@@ -166,8 +166,12 @@ securityContext: {}
 
 # -- Launcher sidecar (WebUI reverse proxy to gateway)
 # Runs picoclaw-launcher alongside the gateway in the same pod
+# Uses a separate image tag (sipeed/picoclaw:launcher) that includes the picoclaw-launcher binary
 launcher:
   enabled: false
+  image:
+    # -- Image tag for the launcher sidecar (must contain picoclaw-launcher binary)
+    tag: "launcher"
   port: 18800
   # -- Extra CLI flags for picoclaw-launcher (e.g. ["-lang", "ja", "-debug"])
   extraArgs: []

@@ -2,7 +2,7 @@ apiVersion: v2
 name: picoclaw
 description: Helm chart for PicoClaw - lightweight AI assistant for Kubernetes
 type: application
-version: 0.1.9
+version: 0.1.10
 appVersion: "v0.2.5"
 home: https://github.com/sipeed/picoclaw
 sources:
