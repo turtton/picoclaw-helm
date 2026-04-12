@@ -2,7 +2,7 @@
 
 Helm chart for deploying PicoClaw, a lightweight AI assistant, on Kubernetes.
 
-[Japanese version](README.ja.md)
+[日本語](README.ja.md)
 
 ## Prerequisites
 
