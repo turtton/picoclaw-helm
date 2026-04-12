@@ -44,7 +44,7 @@ The following table lists the most important configuration parameters for the Pi
 | `launcher.port` | Port for the launcher WebUI | `18800` |
 | `copilotCli.enabled` | Enable the GitHub Copilot CLI sidecar (requires `copilotCli.tokenSecret.name`) | `false` |
 | `service.type` | Kubernetes Service type | `ClusterIP` |
-| `service.port` | Kubernetes Service port | `18790` |
+| `service.port` | Gateway port (default `18790`; do not change without chart modification) | `18790` |
 | `resources` | Pod resource requests and limits | `{}` |
 | `nodeSelector` | Node selection labels | `{}` |
 | `tolerations` | Pod tolerations | `[]` |
@@ -84,6 +84,27 @@ launcher:
 ```
 
 The launcher provides a web interface that proxies requests to the PicoClaw gateway. It uses a separate image tag (`launcher`) by default.
+
+## Copilot CLI
+
+The chart can run a GitHub Copilot CLI sidecar for AI-assisted shell access:
+
+```yaml
+copilotCli:
+  enabled: true
+  tokenSecret:
+    name: my-copilot-token
+```
+
+The sidecar requires a pre-existing Secret containing a GitHub Copilot token. See `values.yaml` for full options.
+
+## Architecture
+
+- `PICOCLAW_HOME` is fixed at `/root/.picoclaw` and backed by a PersistentVolumeClaim (or `emptyDir` when `persistence.enabled=false`)
+- An init container copies `config.json`, `.security.yml` (if configured), workspace files, and skill files into the volume before the main container starts
+- The main container runs `picoclaw gateway -E`
+- Deployment strategy is `Recreate` (single replica assumed)
+- Only `config.json` changes (via `config.*` values) trigger automatic redeployment; updates to `securityConfig`, `workspaceFiles`, or `skillFiles` require a manual pod restart
 
 ## Uninstalling the Chart
 

@@ -27,7 +27,7 @@ chart/picoclaw/          # The only chart
 - **Init container** copies config.json, .security.yml, workspace files, and skill files into the PVC before the main container starts
 - **Main container** runs `picoclaw gateway -E` (bypasses entrypoint.sh)
 - **Deployment strategy** is `Recreate` (not RollingUpdate) — single replica assumed
-- **Config checksum** annotation on pod triggers redeployment on config changes
+- **Config checksum** annotation on pod hashes `configmap.yaml` (i.e. `config.json`) only; changes to Secrets, workspace ConfigMap, or skill ConfigMaps do NOT auto-trigger redeployment
 - **Security secrets** have two paths: inline `securityConfig` (chart-managed Secret) or `securitySecret.existingSecret` (pre-existing Secret)
 - **Launcher sidecar** (WebUI) and **copilot-cli sidecar** are optional, gated by `.Values.launcher.enabled` / `.Values.copilotCli.enabled`
 
@@ -61,5 +61,5 @@ No test suite, no pre-commit hooks, no Makefile.
 ## Conventions
 
 - Commit messages follow `type: description` format (`feat:`, `fix:`, `chore:`, `ci:`)
-- No README in repo — values.yaml comments are the primary documentation
+- `README.md` (English) and `README.ja.md` (Japanese) cover installation and configuration; `values.yaml` comments remain the detailed reference
 - `.gitignore` excludes `.github/*` except `.github/workflows/`

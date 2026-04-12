@@ -2,9 +2,6 @@
 
 PicoClaw Helm Chartは、軽量なAIアシスタントである[PicoClaw](https://github.com/sipeed/picoclaw)をKubernetesクラスターにデプロイするためのHelmチャートです。
 
-- チャートバージョン: 0.1.11
-- PicoClaw バージョン (appVersion): v0.2.5
-
 [English version](README.md)
 
 ## 前提条件
@@ -13,6 +10,10 @@ PicoClaw Helm Chartは、軽量なAIアシスタントである[PicoClaw](https:
 - Helm 3.0以上
 
 ## インストール
+
+現在のバージョン:
+- チャートバージョン: `0.1.11`
+- PicoClaw バージョン (appVersion): `v0.2.5`
 
 以下のコマンドを実行してHelmリポジトリを追加し、チャートをインストールします。
 
@@ -41,9 +42,9 @@ helm install my-picoclaw picoclaw/picoclaw --version 0.1.11
 | `persistence.size` | 永続ボリュームのサイズ | `5Gi` |
 | `launcher.enabled` | オプションのLauncher WebUIサイドカーを有効化 | `false` |
 | `launcher.port` | Launcher WebUIのポート | `18800` |
-| `copilotCli.enabled` | GitHub Copilot CLIサイドカーを有効化 | `false` |
+| `copilotCli.enabled` | GitHub Copilot CLIサイドカーを有効化（`copilotCli.tokenSecret.name` が必要） | `false` |
 | `service.type` | Kubernetes Serviceのタイプ | `ClusterIP` |
-| `service.port` | Kubernetes Serviceのポート | `18790` |
+| `service.port` | ゲートウェイのポート（デフォルト `18790`、チャート修正なしでの変更は非推奨） | `18790` |
 | `resources` | Podのリソースリクエストと制限 | `{}` |
 | `nodeSelector` | ノード選択ラベル | `{}` |
 | `tolerations` | PodのTolerations | `[]` |
@@ -68,7 +69,7 @@ APIキーやボットトークンなどの機密情報が必要な場合、`.sec
 ```yaml
 skillFiles:
   my-skill:
-    configMapName: my-skill-configmap
+    configMapName: my-skill-cm
     items:
       - key: SKILL.md
         path: SKILL.md
@@ -84,6 +85,27 @@ launcher:
 ```
 
 Launcherは、PicoClawゲートウェイへのリクエストをプロキシするWebインターフェースを提供します。デフォルトでは、専用のイメージタグ（`launcher`）を使用します。
+
+## Copilot CLI
+
+GitHub Copilot CLIサイドカーを有効にすることで、AI支援のシェルアクセスが利用できます。
+
+```yaml
+copilotCli:
+  enabled: true
+  tokenSecret:
+    name: my-copilot-token
+```
+
+サイドカーには、GitHub Copilotトークンを含む既存のSecretが必要です。詳細は `values.yaml` を参照してください。
+
+## アーキテクチャ
+
+- `PICOCLAW_HOME` は `/root/.picoclaw` 固定で、PersistentVolumeClaim（`persistence.enabled=false` の場合は `emptyDir`）にマウントされます
+- init コンテナが `config.json`、`.security.yml`（設定時のみ）、ワークスペースファイル、スキルファイルをボリュームにコピーしてからメインコンテナが起動します
+- メインコンテナは `picoclaw gateway -E` を実行します
+- Deployment の更新戦略は `Recreate`（単一レプリカ前提）です
+- `config.json` の変更（`config.*` 値経由）のみ自動再デプロイされます。`securityConfig`、`workspaceFiles`、`skillFiles` の変更は手動での Pod 再起動が必要です
 
 ## アンインストール
 
