@@ -115,6 +115,16 @@ skillFiles: {}
 #      - key: SKILL.md
 #        path: SKILL.md
 
+# -- Agent workspace files to inject
+# Each entry creates files under workspace/<agent-id>/
+# The agent's workspace path is automatically set in config.json
+agentFiles: {}
+#  my-agent:
+#    configMapName: my-agent-configmap
+#    items:
+#      - key: AGENT.md
+#        path: AGENT.md
+
 # -- Extra environment variables
 extraEnv: []
 #  - name: GITHUB_TOKEN

@@ -58,6 +58,12 @@ spec:
               cp "/skill-{{ $name }}/{{ .key }}" "$PICO_HOME/workspace/skills/{{ $name }}/{{ .path }}"
               {{- end }}
               {{- end }}
+              {{- range $name, $agent := .Values.agentFiles }}
+              mkdir -p "$PICO_HOME/workspace/{{ $name }}"
+              {{- range $agent.items }}
+              cp "/agent-{{ $name }}/{{ .key }}" "$PICO_HOME/workspace/{{ $name }}/{{ .path }}"
+              {{- end }}
+              {{- end }}
           volumeMounts:
             - name: data
               mountPath: {{ include "picoclaw.picoHome" . }}
@@ -77,6 +83,10 @@ spec:
             {{- range $name, $skill := .Values.skillFiles }}
             - name: skill-{{ $name }}
               mountPath: /skill-{{ $name }}
+            {{- end }}
+            {{- range $name, $agent := .Values.agentFiles }}
+            - name: agent-{{ $name }}
+              mountPath: /agent-{{ $name }}
             {{- end }}
       containers:
         - name: {{ .Chart.Name }}
@@ -248,6 +258,18 @@ spec:
             {{- if $skill.items }}
             items:
               {{- range $skill.items }}
+              - key: {{ .key }}
+                path: {{ .key }}
+              {{- end }}
+            {{- end }}
+        {{- end }}
+        {{- range $name, $agent := .Values.agentFiles }}
+        - name: agent-{{ $name }}
+          configMap:
+            name: {{ $agent.configMapName }}
+            {{- if $agent.items }}
+            items:
+              {{- range $agent.items }}
               - key: {{ .key }}
                 path: {{ .key }}
               {{- end }}

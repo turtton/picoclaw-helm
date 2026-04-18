@@ -7,7 +7,20 @@ metadata:
 data:
   config.json: |
     {{- $config := dict }}
-    {{- $_ := set $config "agents" .Values.config.agents }}
+    {{- $agents := deepCopy .Values.config.agents }}
+    {{- if .Values.agentFiles }}
+    {{- $picoHome := include "picoclaw.picoHome" . }}
+    {{- $newList := list }}
+    {{- range $agents.list }}
+    {{- $agent := deepCopy . }}
+    {{- if and .id (hasKey $.Values.agentFiles .id) (not .workspace) }}
+    {{- $_ := set $agent "workspace" (printf "%s/workspace/%s" $picoHome .id) }}
+    {{- end }}
+    {{- $newList = append $newList $agent }}
+    {{- end }}
+    {{- $_ := set $agents "list" $newList }}
+    {{- end }}
+    {{- $_ := set $config "agents" $agents }}
     {{- if .Values.config.model_list }}
     {{- $_ := set $config "model_list" .Values.config.model_list }}
     {{- end }}
